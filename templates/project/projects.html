@@ -394,7 +394,7 @@
                              '                                <a href="/media/'+value.attached_file+'" target="_blank">file</a>\n' +
                              '                            </div>\n' +
                              '                          <div class="col-md-2">\n' +
-                             '                          <button class="form-control" onclick="deleteComment(' + value.id + ')"><i class="fa fa-trash"></i></button>\n' +
+                             {#'                          <button class="form-control" onclick="deleteComment(' + value.id + ')"><i class="fa fa-trash"></i></button>\n' +#}
                              '                          </div>\n' +
                              '                        </div></div><hr/>')
                      })
@@ -445,7 +445,7 @@
 
                             '                          <div class="col-md-2">\n' +
 
-                            '                          <button class="form-control" onclick="deleteTask(' + data.id + ')"><i class="fa fa-trash"></i></button>\n' +
+                            {#'                          <button class="form-control" onclick="deleteTask(' + data.id + ')"><i class="fa fa-trash"></i></button>\n' +#}
                             '                          </div>\n'
                         )
                     }
