@@ -1,0 +1,492 @@
+{% extends 'base/index.html' %}
+{% block body %}
+
+    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Add Project
+    </button><br/>
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h4>Enter Project Name</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <input type="text" id="edit_project_id" hidden>
+
+                        <div class="col-md-8">
+                            <input type="text" name="project_name" id="id_project_name" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="form-control" onclick="save_project()">Save</button>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {#    9619454407 - swpnin -#}
+    <div class="modal fade" id="idTaskModel" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>Task</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" name="project_id" id="project_id" hidden>
+                            <input type="text" name="task_id" id="task_id" hidden>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" name="task" id="id_task" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <div class='input-group date' id='datetimepicker1'>
+                                <input type='text' name="task_date" id="id_task_date" class="form-control"/>
+                                <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="row" id="idAddExtra">
+                    </div>
+                    <div class="row" style="align-items: center">
+                        <div class="col-md-4">
+                            <button class="form-control" onclick="addTaskClone()">Add + Task</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{#    Comment Model#}
+    <div class="modal fade" id="idCommentModel" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>Comment</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" id="comment_task_id" hidden>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="idAllComment">
+                        <hr/>
+                    </div>
+                    <div class="row" id="comment_form">
+                        <div class="col-md-8">
+                            <input type="text" name="comment" id="id_comment" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="file" name="comment_file" id="id_comment_file" class="form-control">
+                        </div>
+                    </div>
+                    <br/>
+
+                    <div class="row" style="align-items: center">
+                        <div class="col-md-4">
+                            <button class="form-control" onclick="commentCreate()">Comment</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="id_project_list">
+        <div class="row" id="all_projects">
+        </div>
+    <div class="row" id="task_list">
+
+
+    </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            all_project();
+             $('#datetimepicker1').datetimepicker({
+
+                format: 'YYYY-MM-DD HH:mm'
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        var token = localStorage.getItem('token');
+
+    function addTaskClone() {
+
+        if($('#id_task_date').val() && $('#id_task_date').val()) {
+            if ($('#project_id').val()) {
+
+                var data = {
+                    "detail": $('#id_task').val(),
+                    "deadline": $('#id_task_date').val(),
+                    "project": $('#project_id').val()
+                };
+                $.ajax({
+                    url: "/task/task/",
+                    contentType: "application/json; charset=utf-8",
+                    type: 'POST',
+                    headers: {
+                    'Authorization': 'Token '+token
+                    },
+                    data: JSON.stringify(data),
+                    success: function (data) {
+
+                        $('#id_project_task' + data.project).append('<div class="col-md-4">\n' +
+                            '            ' + data.detail +
+                            '        </div>\n' +
+                            '        <div class="col-md-2">\n' +
+                            data.deadline +
+                            '        </div>\n' +
+                            '        <div class="col-md-1">\n' +
+                            '           <button class="form-control" onclick="editTask(' + data.id + ')"><i class="fa fa-edit"></i></button>\n' +
+                            '        </div>\n' +
+                            '        <div class="col-md-1">\n' +
+                            '           <button class="form-control" onclick="deleteTask(' + data.id + ')"><i class="fa fa-trash"></i></button>\n' +
+                            '        </div>\n' +
+                            '        <div class="col-md-2">\n' +
+                            '            <input type="checkbox" id="is_complete_' + data.id + '" onclick="changeStatus(' + data.id + ')"> \n' +
+                            '        </div>' +
+                            '        <div class="col-md-1">\n' +
+                            '         <button class="form-control" onclick="addComment(' + data.id + ')"><i class="far fa-comment"></i></button>\n' +
+
+                            '        </div>');
+                        $('#idTaskModel').modal('hide')
+                    }
+                })
+            }
+            if ($('#task_id').val()) {
+
+                var data = {
+                    "detail": $('#id_task').val(),
+                    "deadline": $('#id_task_date').val(),
+
+                };
+                $.ajax({
+                    url: "/task/task/" + $('#task_id').val(),
+                    contentType: "application/json; charset=utf-8",
+                    type: 'PUT',
+                    headers: {
+                    'Authorization': 'Token '+token
+                },
+                    data: JSON.stringify(data),
+                    success: function (data) {
+                        document.getElementById(data.id).remove();
+                        $('#id_project_task' + data.project).append('<br/><div id="' + data.id + '"><div class="col-md-4">\n' +
+                            '            ' + data.detail +
+                            '        </div>\n' +
+                            '        <div class="col-md-2">\n' +
+                            data.deadline +
+                            '        </div>\n' +
+                            '        <div class="col-md-1">\n' +
+                            '           <button class="form-control" onclick="editTask(' + data.id + ')"><i class="fa fa-edit"></i></button>\n' +
+                            '        </div>\n' +
+                            '        <div class="col-md-1">\n' +
+                            '           <button class="form-control" onclick="deleteTask(' + data.id + ')"><i class="fa fa-trash"></i></button>\n' +
+                            '        </div>\n' +
+                            '        <div class="col-md-2">\n' +
+                            '           <button class="form-control" onclick="addComment(' + data.id + ')"><i class="far fa-comment"></i></button>\n' +
+                            '        </div>' +
+                            '        <div class="col-md-1">\n' +
+                            '<button class="form-control" onclick="addComment(' + data.id + ')"><i class="far fa-comment"></i></button>\n' +
+
+                            '        </div>' +
+                            '</div>');
+                         $('#idTaskModel').modal('hide')
+                    }
+                })
+
+            }
+
+            }
+         else{
+
+                alert("enter all Details")
+        }
+
+    }
+        function save_project() {
+        if($('#id_project_name').val()) {
+            var data = {"title": $('#id_project_name').val()};
+
+            if ($('#edit_project_id').val()) {
+
+                $.ajax({
+                    url: "/project/project/" + $('#edit_project_id').val(),
+                    data: JSON.stringify(data),
+                    headers: {
+                    'Authorization': 'Token '+token
+                },
+                    contentType: "application/json; charset=utf-8",
+                    type: 'PUT',
+                    success: function (data) {
+                        location.reload()
+                    }
+                })
+            } else {
+                $.ajax({
+                    url: "/project/project/",
+                    data: JSON.stringify(data),
+                    headers: {
+                    'Authorization': 'Token '+token
+                },
+                    contentType: "application/json; charset=utf-8",
+                    type: 'POST',
+                    success: function (data) {
+                        $('#id_project_list').append('' +
+                            '<hr/><div class="row" id="all_projects">\n' +
+                            '            <div class="col-md-4">\n' +
+                            '<h3 style="border-bottom: 3px solid blue;">' + data.title + '</h3>' +
+                            '            </div>\n' +
+                            '            <div class="col-md-4">\n' +
+                            '                <button class="form-control" onclick="addtask(' + data.id + ')">Add Task</button>\n' +
+                            '            </div>' +
+                            '            <div class="col-md-2">\n' +
+                            '                <button class="form-control" onclick="editProject(' + data.id + ')"><i class="fa fa-edit"></i></button>\n' +
+                            '            </div>' +
+                            '           <div class="col-md-2">\n' +
+                            '                <button class="form-control" onclick="deleteProject(' + data.id + ')"><i class="fa fa-trash"></i></button>\n' +
+                            '            </div>' +
+                            '        </div>' +
+                            '   <div id="id_project_task' + data.id + '">' +
+                            '   </div>'
+
+                        );
+                         $('#myModal').modal('hide')
+                    }
+                });
+            }
+        }
+        else {
+            alert("enter project name")
+        }
+        }
+
+        function all_project() {
+            $.ajax({
+                url: "/project/project/",
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    'Authorization': 'Token '+token
+                },
+                type: 'GET',
+                success: function (data) {
+
+                    data.forEach(function (value, key) {
+
+                            $('#id_project_list').append('' +
+                                '<hr/><div class="row" id="all_projects">\n' +
+                                '            <div class="col-md-4">\n' +
+                                '<h3 style="border-bottom: 3px solid blue;">'+value.title+'</h3>'+
+                                '            </div>\n' +
+                                '<div class="col-md-4">\n' +
+                                '                <button class="form-control" onclick="addtask(' + value.id + ')">Add Task</button>\n' +
+                                '            </div>' +
+                                    '<div class="col-md-1">\n' +
+                                     '                          <button class="form-control" onclick="editProject(' + value.id + ')"><i class="fa fa-edit"></i></button>\n' +
+                                    '</div>\n' +
+                                    '                          <div class="col-md-1">\n' +
+
+                                    '                          <button class="form-control" onclick="deleteProject(' + value.id + ')"><i class="fa fa-trash"></i></button>\n'+
+                                    '                          </div>\n'+
+
+                                '        </div><div id="id_project_task'+value.id+'"></div>'
+                            );
+                         value.project_task.forEach(function (v1, k1) {
+                           $('#id_project_task'+value.id).append('<br/><div id="'+v1.id+'"><div class="col-md-4">\n' +
+                                '            ' +v1.detail+
+                                '        </div>\n' +
+                                '        <div class="col-md-2">\n' +
+                                v1.deadline+
+                                '        </div>\n' +
+                                '        <div class="col-md-1">\n' +
+                                '           <button class="form-control" onclick="editTask(' + v1.id + ')"><i class="fa fa-edit"></i></button>\n' +
+                                '        </div>\n' +
+                                '        <div class="col-md-1">\n' +
+                                '           <button class="form-control" onclick="deleteTask(' + v1.id + ')"><i class="fa fa-trash"></i></button>\n' +
+                                '        </div>\n' +
+                                '        <div class="col-md-2">\n' +
+                                '            <input type="checkbox" id="is_complete_'+v1.id+'" onclick="changeStatus(' + v1.id + ')">\n' +
+                                '        </div>' +
+                                '        <div class="col-md-1">\n' +
+                                '<button class="form-control" onclick="addComment(' + v1.id + ')"><i class="far fa-comment"></i></button>\n' +
+
+                                '        </div>' +
+                               '</div><br/><br/>');
+                                console.log(v1.is_complete);
+                             if(v1.is_complete === true) {
+
+                                 $('#is_complete_' + v1.id).prop("checked", true);
+                             }
+                             else {
+                                 $('#is_complete_' + v1.id).prop("checked", false);
+
+                             }
+                            })
+
+                        }
+                    )
+
+
+                }
+            });
+        }
+        
+
+        function addtask(project_id) {
+            $('#idTaskModel').modal('show');
+            $('#project_id').val(project_id)
+        }
+        function editTask(task_id) {
+             $('#idTaskModel').modal('show');
+             $('#task_id').val(task_id);
+             $('#project_id').val("")
+        }
+        function addComment(task_id) {
+            $('#idCommentModel').modal('show');
+            $('#comment_task_id').val(task_id);
+
+            $.ajax({
+                url: "/task/task/"+task_id,
+                 headers: {
+                    'Authorization': 'Token '+token
+                },
+                contentType: "application/json; charset=utf-8",
+                type: 'GET',
+                success: function (data) {
+                    var comment = data.task_comment;
+
+                     comment.forEach(function (value, key) {
+                         $('#idAllComment').append(' <div class="modal-body"><div class="row">\n' +
+                             '                            <div class="col-md-8">\n' +
+                                                            value.detail+
+                             '                            </div>\n' +
+                             '                            <div class="col-md-2">\n' +
+                             '                                <a href="/media/'+value.attached_file+'" target="_blank">file</a>\n' +
+                             '                            </div>\n' +
+                             '                          <div class="col-md-2">\n' +
+                             '                          <button class="form-control" onclick="deleteComment(' + value.id + ')"><i class="fa fa-trash"></i></button>\n' +
+                             '                          </div>\n' +
+                             '                        </div></div><hr/>')
+                     })
+                }
+                })
+
+        }
+        function deleteTask(task_id) {
+             $.ajax({
+                url: "/task/task/" + task_id,
+                contentType: "application/json; charset=utf-8",
+                type: 'DELETE',
+                 headers: {
+                    'Authorization': 'Token '+token
+                },
+                success: function (data) {
+
+                    document.getElementById(task_id).remove();
+
+                }
+            })
+        }
+        function commentCreate() {
+            if($('#id_comment').val()) {
+                var form_data = new FormData();
+                if ($('#id_comment_file')[0].files[0] !== undefined) {
+                    form_data.append('attached_file', $('#id_comment_file')[0].files[0]);
+                }
+                form_data.append("detail", $('#id_comment').val());
+                form_data.append("task", ($('#comment_task_id').val()));
+                $.ajax({
+                    url: "/task/comment/",
+                    data: form_data,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    type: 'POST',
+                    headers: {
+                    'Authorization': 'Token '+token
+                },
+                    success: function (data) {
+                        $('#idAllComment').append('<div class="col-md-4">\n' +
+                            data.detail +
+                            '                            </div>\n' +
+                            '                            <div class="col-md-4">\n' +
+                            '                                <a href="' + data.attached_file + '" target="_blank">File</a>\n' +
+                            '                            </div>' +
+
+                            '                          <div class="col-md-2">\n' +
+
+                            '                          <button class="form-control" onclick="deleteTask(' + data.id + ')"><i class="fa fa-trash"></i></button>\n' +
+                            '                          </div>\n'
+                        )
+                    }
+                })
+            }
+            else{
+                alert("Enter Comment Please")
+            }
+        }
+        function editProject(project_id) {
+            $('#edit_project_id').val(project_id);
+            $('#myModal').modal('show');
+        }
+        function deleteProject(project_id) {
+            $.ajax({
+                url: "/project/project/" + project_id,
+                contentType: "application/json; charset=utf-8",
+                type: 'DELETE',
+                headers: {
+                    'Authorization': 'Token '+token
+                },
+                success: function (data) {
+                    location.reload()
+                }
+            })
+        }
+        function changeStatus(task_id) {
+            var data = {"is_complete": $("#is_complete_"+task_id).prop('checked')}
+           $.ajax({
+                url: "/task/task/" + task_id,
+
+                data: JSON.stringify(data),
+                headers: {
+                    'Authorization': 'Token '+token
+                },
+                contentType: "application/json; charset=utf-8",
+                type: 'PATCH',
+                success: function (data) {
+                    {#location.reload()#}
+                }
+            })
+        }
+    </script>
+{% endblock %}
