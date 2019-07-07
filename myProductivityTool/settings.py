@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'authuser',
     'project',
     'task',
+    'htmlapp',
 
     # ThirdParty App
     'rest_framework',
