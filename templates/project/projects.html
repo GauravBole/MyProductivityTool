@@ -161,7 +161,7 @@
                     data: JSON.stringify(data),
                     success: function (data) {
 
-                        $('#id_project_task' + data.project).append('<div class="col-md-4">\n' +
+                        $('#id_project_task' + data.project).append('<div id=' + data.id + '><div class="col-md-4">\n' +
                             '            ' + data.detail +
                             '        </div>\n' +
                             '        <div class="col-md-2">\n' +
@@ -179,7 +179,7 @@
                             '        <div class="col-md-1">\n' +
                             '         <button class="form-control" onclick="addComment(' + data.id + ')"><i class="far fa-comment"></i></button>\n' +
 
-                            '        </div>');
+                            '        </div></div>');
                         $('#idTaskModel').modal('hide')
                     }
                 })
